@@ -36,19 +36,22 @@ def login():
 @app.route('/profile/<user_id>')
 @login_required
 def profile(user_id):
-    # IDOR Vulnerability: No authorization check if the logged-in user
-    # has permission to view this profile
-    if user_id in USERS:
-        return render_template('profile.html', user=USERS[user_id])
-    return "Profile not found", 404
+    # IDOR Fix: Check if the logged-in user has permission to view this profile
+    if session['user_id'] == user_id or USERS.get(user_id, {}).get('role') == 'admin':
+        if user_id in USERS:
+            return render_template('profile.html', user=USERS[user_id])
+        return "Profile not found", 404
+    return "You do not have permission to view this profile", 403
 
 @app.route('/api/user/<user_id>/data')
 @login_required
 def get_user_data(user_id):
-    # Another IDOR vulnerability in the API endpoint
-    if user_id in USERS:
-        return jsonify(USERS[user_id])
-    return jsonify({"error": "User not found"}), 404
+    # IDOR Fix: Check if the logged-in user has permission to access this user's data
+    if session['user_id'] == user_id or USERS.get(user_id, {}).get('role') == 'admin':
+        if user_id in USERS:
+            return jsonify(USERS[user_id])
+        return jsonify({"error": "User not found"}), 404
+    return jsonify({"error": "Unauthorized access"}), 403
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000) 
+    app.run(debug=True, port=5000)
