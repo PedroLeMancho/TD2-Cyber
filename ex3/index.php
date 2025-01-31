@@ -2,27 +2,17 @@
 // Connexion à la base de données
 $conn = new mysqli("localhost", "root", "", "testdb");
 
-// 1. Command Injection via un paramètre GET (corrigée avec proc_open)
+// 1. Command Injection via un paramètre GET (corrigée avec escapeshellarg)
 if (isset($_GET['command'])) {
-    $command = $_GET['command']; // Entrée utilisateur
+    $command = trim($_GET['command']); // Nettoyage de l'entrée utilisateur
 
-    // Validation stricte avec une liste blanche
-    $allowed_commands = ['ls', 'whoami'];
-    if (in_array($command, $allowed_commands)) {
-        // Création sécurisée du processus
-        $descriptor_spec = [
-            0 => ["pipe", "r"], // STDIN
-            1 => ["pipe", "w"], // STDOUT
-            2 => ["pipe", "w"]  // STDERR
-        ];
-
-        $process = proc_open($command, $descriptor_spec, $pipes);
-        if (is_resource($process)) {
-            $output = stream_get_contents($pipes[1]); // Lire la sortie
-            fclose($pipes[1]);
-            proc_close($process);
-            echo "Sortie de la commande : " . htmlspecialchars($output);
-        }
+    // Validation stricte : Limiter les commandes autorisées
+    $allowed_commands = ['ls', 'whoami']; // Liste blanche
+    if (in_array($command, $allowed_commands, true)) {
+        // Protection contre l'injection de commande
+        $safe_command = escapeshellcmd(escapeshellarg($command));
+        $output = shell_exec($safe_command);
+        echo "Sortie de la commande : " . htmlspecialchars($output, ENT_QUOTES, 'UTF-8');
     } else {
         echo "Commande non autorisée.";
     }
