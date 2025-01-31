@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Démonstration</title>
+</head>
+<body>
+    <h1>Bienvenue sur le site vulnérable</h1>
+
+    <!-- Affichage des commentaires -->
+    <form method="POST" action="index.php">
+        <label for="comment">Entrez un commentaire :</label>
+        <input type="text" name="comment" id="comment" placeholder="Votre commentaire ici">
+        <button type="submit">Envoyer</button>
+    </form>
+
+    <h2>Suppression d'utilisateur</h2>
+    <a href="index.php?delete_user=1">Supprimer un utilisateur</a>
+</body>
+</html>
