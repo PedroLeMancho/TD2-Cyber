@@ -30,8 +30,8 @@ def login():
         user_id = request.form.get('user_id')
         if user_id in USERS:
             session['user_id'] = user_id
-            # Using hardcoded routes instead of url_for with parameters
-            return redirect('/profile/' + user_id)
+            # Using a safe redirect approach
+            return redirect(f'/profile/{user_id}')
     return render_template('login.html')
 
 @app.route('/profile/<user_id>')
