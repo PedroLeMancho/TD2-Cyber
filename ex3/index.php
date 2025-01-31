@@ -2,25 +2,25 @@
 // Connexion à la base de données
 $conn = new mysqli("localhost", "root", "", "testdb");
 
-// 1. Command Injection via un paramètre GET (corrigée avec escapeshellarg)
-if (isset($_GET['command'])) {
-    $command = trim($_GET['command']); // Nettoyage de l'entrée utilisateur
-
-    // Validation stricte : Limiter les commandes autorisées
-    $allowed_commands = ['ls', 'whoami']; // Liste blanche
-    if (in_array($command, $allowed_commands, true)) {
-        // Protection contre l'injection de commande
-        $safe_command = escapeshellcmd(escapeshellarg($command));
-        $output = shell_exec($safe_command);
-        echo "Sortie de la commande : " . htmlspecialchars($output, ENT_QUOTES, 'UTF-8');
-    } else {
-        echo "Commande non autorisée.";
-    }
+if ($conn->connect_error) {
+    die("Échec de connexion : " . $conn->connect_error);
 }
 
-// Exemple de formulaire
+$message = "";
+
+// Vérification de l'identifiant et du mot de passe
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    // Vulnérabilité SQLi détectable par un DAST mais pas par Semgrep
+    $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
+    $result = $conn->query($sql);
+
+    if ($result && $result->num_rows > 0) {
+        $message = "Connexion réussie !";
+    } else {
+        $message = "Échec de la connexion.";
+    }
+}
 ?>
-<form method="GET">
-    <input type="text" name="command" placeholder="Entrez une commande">
-    <input type="submit" value="Exécuter">
-</form>
